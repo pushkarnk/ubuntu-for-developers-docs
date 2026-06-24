@@ -47,3 +47,7 @@ ZLS
 zls
 libc
 musl
+Qwen
+qwen
+OpenAI
+openai
