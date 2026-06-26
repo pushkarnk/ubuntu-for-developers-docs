@@ -26,6 +26,7 @@ Develop with Java <java-use>
 Develop with Zig <zig-use>
 Native compile with GraalVM <graalvm-use>
 Checkpoint/Restore with OpenJDK CRaC <crac-use>
+Retrieval Augmented Generation with Spring AI <springai-rag>
 :::
 
 See the {ref}`howto` for instructions on installing and setting up the individual toolchains.
