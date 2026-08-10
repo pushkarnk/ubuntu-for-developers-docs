@@ -72,3 +72,13 @@ What devpacks are and how they work.
 
 devpacks
 :::
+
+## OpenJDK OpenSSL FIPS
+
+Running Java applications with FIPS-compliance requirements on Ubuntu Pro using the OpenJDK OpenSSL FIPS packages.
+
+:::{toctree}
+:maxdepth: 1
+
+openjdk-fips-openssl
+:::
