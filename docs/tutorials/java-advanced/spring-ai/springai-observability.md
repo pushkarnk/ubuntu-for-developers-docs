@@ -3,51 +3,62 @@ myst:
   html_meta:
     description: "Spring AI observability metrics for the Retrieval Augmented Generation sample"
 ---
+
 (springai-observability)=
 # Spring AI and Observability
 
-The tutorial demonstrates how metrics like token usage count, and statistics for model interaction and vector database operations could be fetched from Spring AI. It also demonstrates how easy it is to have these metrics viewed in {pkg}`prometheus`.
+The tutorial demonstrates how to fetch metrics, such as token usage count and statistics for model interaction and vector database operations, from Spring AI. It also shows how easy it is to view these metrics in {pkg}`prometheus`.
+
 
 ## Spring AI metrics for the Retrieval Augmented Generation sample
 
-In the {ref}`springai-rag` tutorial, we implemented Retrieval Augmented Generation using the {pkg}`ollama`/{pkg}`nomic-embed-text` embedding model and storing the embeddings in an {pkg}`opensearch` vector database. This tutorial extends the RAG example by adding Spring AI observability metrics. 
+In the {ref}`springai-rag` tutorial, we implemented Retrieval Augmented Generation using the `ollama`/`nomic-embed-text` embedding model and storing the embeddings in an `opensearch` vector database. This tutorial extends the RAG example by adding Spring AI observability metrics.
 
-The Spring Boot [Actuator](https://docs.spring.io/spring-boot/reference/actuator/enabling.html) is at the center of Spring AI observability. The Actuator presents production-ready features to monitor and manage Spring Boot applications after pushing them to production, through [endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html). This tutorial uses the `/metrics` and `/prometheus` endpoints to fetch Spring AI metrics and view them in {pkg}`prometheus`.
+The Spring Boot [Actuator](https://docs.spring.io/spring-boot/reference/actuator/enabling.html) is at the center of Spring AI observability. The Actuator presents production-ready features to monitor and manage Spring Boot applications (after pushing them to production) through [endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html). This tutorial uses the `/metrics` and `/prometheus` endpoints to fetch Spring AI metrics and view them in {pkg}`prometheus`.
 
 :::{important}
-Implementing the {ref}`springai-rag` tutorial is a strict pre-requisite to implement and appreciate this tutorial.
+Implementing the {ref}`springai-rag` tutorial is a strict prerequisite for implementing and appreciating this tutorial.
 :::
+
 
 ### 1. Reporting Spring AI metrics on the chat-client interface
 
-This tutorial assumes that the user's environment has all the pre-requisites listed in {ref}`springai-rag`.
+This tutorial assumes that your environment has all the prerequisites listed in {ref}`springai-rag`.
+
 
 #### 1.1 Clone the Spring AI Retrieval Augmented Generation sample
+
 ```{terminal}
 git clone https://github.com/pushkarnk/spring-ai-rag-demo.git
 ```
 
+
 #### 1.2 Add the Spring Boot Actuator dependency
 
-Add the following dependency to {file}`build.gradle` to the `dependencies` task:
+Add the following dependency to the `dependencies` task in {file}`build.gradle`:
+
 ```{code-block} groovy
 implementation 'org.springframework.boot:spring-boot-starter-actuator'
 ```
 
+
 #### 1.3 Expose the 'health' and 'metrics' endpoints
 
-Add the following property at the end of {file}`src/main/resource/application.properties`:
+Add the following property at the end of {file}`src/main/resources/application.properties`:
+
 ```{code-block} properties
 management.endpoints.web.exposure.include=health,metrics
 ```
 
+
 #### 1.4 Update the chat-client web front-end
 
 We want to have the following information reported on the web front-end of the chat client:
- - Name of the model used
- - Model interaction - number of operations and total time (in seconds) spent on them
- - Vector database operations - number of operations and total time (in seconds) spent on them 
- - Token usage (in / out / total)
+
+- Name of the model used
+- Model interaction - number of operations and total time (in seconds) spent on them
+- Vector database operations - number of operations and total time (in seconds) spent on them
+- Token usage (in/out/total)
 
 :::{note}
 The Spring AI metrics fetched from the Actuator endpoints are relevant to the current instance of the Spring AI application. They are reset on application restart.
@@ -55,7 +66,10 @@ The Spring AI metrics fetched from the Actuator endpoints are relevant to the cu
 
 Here is an updated {file}`src/main/resources/static/index.html`. Copy it into your local project.
 
+::::{dropdown} Click to expand: `src/main/resources/static/index.html`
 ```{code-block} html
+:caption: `src/main/resources/static/index.html`
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -278,48 +292,58 @@ Here is an updated {file}`src/main/resources/static/index.html`. Copy it into yo
 </body>
 </html>
 ```
+::::
+
 
 #### 1.5 Launch the application and do a sample interaction
 
 Launch the application using this command:
+
 ```{terminal}
 SPRING_PROFILES_ACTIVE=tls ./gradlew bootRun
 ```
 
-The screen capture below shows a sample interaction with the chat-client. Notice the metrics fetched and reported at the bottom of the window. These metrics are fetched from the Actuator's `/metrics` endpoint by Javascript code in the {file}`src/main/resources/static/index.html`.
+The screen capture below shows a sample interaction with the chat-client. Notice the metrics fetched and reported at the bottom of the window. These metrics are fetched from the Actuator's `/metrics` endpoint by JavaScript code in the {file}`src/main/resources/static/index.html`.
 
-![sprinai-metrics-rag](../../../images/springai-rag/rag-obs.gif)
+![springai-metrics-rag](../../../images/springai-rag/rag-obs.gif)
+
 
 ### 2. Viewing Spring AI metrics in Prometheus
 
-In this section, we will fetch the same metrics as in the previous section, in {pkg}`prometheus`.
+In this section, we fetch the same metrics as in the previous section in {pkg}`prometheus`.
 
 :::{note}
-The goal of this section is only to help appreciate the ease of fetching Spring AI metrics into prometheus, in a development environment.
+The goal of this section is only to help appreciate the ease of fetching Spring AI metrics into {pkg}`prometheus`, in a development environment.
 :::
 
-#### 2.1 Add the Micrometer Register Prometheus dependency
 
-Add the following dependency to {file}`build.gradle` to the `dependencies` task:
+#### 2.1 Add the Micrometer Registry Prometheus dependency
+
+Add the following dependency to the `dependencies` task in {file}`build.gradle`:
+
 ```{code-block} groovy
 implementation 'io.micrometer:micrometer-registry-prometheus'
 ```
 
-#### 2.2 Expose the Actuator's prometheus endpoint
 
-Simply append prometheus to the new property defined in {file}`src/main/resource/application.properties`:
+#### 2.2 Expose the Actuator's Prometheus endpoint
+
+Append {pkg}`prometheus` to the property defined in {file}`src/main/resources/application.properties`:
+
 ```{code-block} properties
 management.endpoints.web.exposure.include=health,metrics,prometheus
 ```
 
-#### 2.3 Install, configure and launch prometheus
+
+#### 2.3 Install, configure, and launch prometheus
 
 Install the APT package for {pkg}`prometheus`:
+
 ```{terminal}
 sudo apt install prometheus
 ```
 
-Update the prometheus configuration in {file}`/etc/prometheus/prometheus.yml`. Add the following `job` at the end of the `scrape_configs` section:
+Update the {pkg}`prometheus` configuration in {file}`/etc/prometheus/prometheus.yml`. Add the following `job` at the end of the `scrape_configs` section:
 
 ```{code-block} yaml
   - job_name: 'springai'
@@ -332,36 +356,43 @@ Update the prometheus configuration in {file}`/etc/prometheus/prometheus.yml`. A
 Ensure the indentation of the above job description matches the existing jobs.
 :::
 
-Finally, launch prometheus:
-```
+Finally, launch {pkg}`prometheus`:
+
+```{terminal}
 sudo prometheus
 ```
-The Prometheus web UI should now be accessible at `http://localhost:9090`.
+
+The Prometheus web UI is now accessible at `http://localhost:9090`.
+
 
 #### 2.4 Launch the application and do a sample interaction
 
 Relaunch the application using this command:
+
 ```{terminal}
 SPRING_PROFILES_ACTIVE=tls ./gradlew bootRun
 ```
 
-This is a screen-capture of another sample interaction:
+This is a screen capture of another sample interaction:
 
 ![springai-rag-prometheus](../../../images/springai-rag/rag-obs-prom.gif)
 
+
 #### 2.5 View the metrics in Prometheus
 
-Open `http://localhost:9090` in a browser window. Select the metric from the drop-down list and click `Execute`. This should display the value of the metric in the `Console` tab.
+Open `http://localhost:9090` in a browser window. Select the metric from the drop-down list and click {guilabel}`Execute`. This displays the value of the metric in the {guilabel}`Console` tab.
 
-Here is the screen-capture of a sample interaction with prometheus:
+Here is the screen capture of a sample interaction with {pkg}`prometheus`:
 
 ![spring-ai-rag-prometheus-view](../../../images/springai-rag/prometheus.gif)
+
 :::{note}
-The Spring AI application should be running while accessing prometheus. An application restart resets the metrics.
+The Spring AI application must be running while accessing {pkg}`prometheus`. An application restart resets the metrics.
 :::
+
 
 ## References
 
-1. [Spring Boot Actuator Documentation](https://docs.spring.io/spring-boot/reference/actuator/enabling.html)
-2. [Spring Boot Actuator Endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html)
-3. [Spring AI Observability](https://docs.spring.io/spring-ai/reference/observability/index.html)
+* [Spring Boot Actuator Documentation](https://docs.spring.io/spring-boot/reference/actuator/enabling.html)
+* [Spring Boot Actuator Endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html)
+* [Spring AI Observability](https://docs.spring.io/spring-ai/reference/observability/index.html)
